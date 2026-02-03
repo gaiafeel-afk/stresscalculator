@@ -125,9 +125,21 @@ h1 {
   margin-top: 0.9rem;
 }
 
+.question-shell {
+  border: 1px solid #d6deec;
+  border-radius: 14px;
+  background: #f9fbff;
+  padding: 0.8rem;
+}
+
+.question-counter {
+  margin: 0 0 0.55rem;
+  color: #3c4f6a;
+  font-weight: 800;
+}
+
 .questions {
-  display: grid;
-  gap: 0.75rem;
+  display: block;
 }
 
 .question-card {
@@ -182,6 +194,13 @@ h1 {
   border-color: var(--primary);
   background: #effbf7;
   box-shadow: 0 0 0 2px rgba(21, 127, 102, 0.14);
+}
+
+.question-nav {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.55rem;
 }
 
 .email-box {
@@ -356,6 +375,10 @@ h2 {
 
   .btn {
     width: 100%;
+  }
+
+  .question-nav {
+    flex-direction: column;
   }
 
   .progress-panel {

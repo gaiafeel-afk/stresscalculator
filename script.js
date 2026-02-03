@@ -18,6 +18,9 @@ const OPTIONS = [
 
 const form = document.getElementById("quizForm");
 const questionsRoot = document.getElementById("questionsRoot");
+const questionCounter = document.getElementById("questionCounter");
+const prevQuestionButton = document.getElementById("prevQuestion");
+const nextQuestionButton = document.getElementById("nextQuestion");
 const progressText = document.getElementById("progressText");
 const progressFill = document.getElementById("progressFill");
 const emailInput = document.getElementById("emailInput");
@@ -32,6 +35,7 @@ const summaryText = document.getElementById("summaryText");
 const nextStepText = document.getElementById("nextStepText");
 
 const answers = {};
+let currentQuestionIndex = 0;
 
 function emailIsValid(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -122,48 +126,66 @@ function updateProgress() {
   progressFill.style.width = `${percent}%`;
 }
 
-function renderQuestions() {
-  const fragment = document.createDocumentFragment();
+function currentQuestionIsAnswered() {
+  const question = QUESTIONS[currentQuestionIndex];
+  return answers[question.id] !== undefined;
+}
 
-  QUESTIONS.forEach((question, index) => {
-    const fieldset = document.createElement("fieldset");
-    fieldset.className = "question-card";
+function updateQuestionNavigation() {
+  questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`;
+  prevQuestionButton.disabled = currentQuestionIndex === 0;
 
-    const legend = document.createElement("legend");
-    legend.textContent = `${index + 1}. ${question.prompt}`;
-    fieldset.appendChild(legend);
+  const onLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
+  if (onLastQuestion) {
+    nextQuestionButton.textContent = "Last question";
+    nextQuestionButton.disabled = true;
+    return;
+  }
 
-    const optionsGrid = document.createElement("div");
-    optionsGrid.className = "options";
+  nextQuestionButton.textContent = "Next";
+  nextQuestionButton.disabled = !currentQuestionIsAnswered();
+}
 
-    OPTIONS.forEach((option) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "option-btn";
-      button.dataset.questionId = question.id;
-      button.dataset.value = String(option.value);
-      button.innerHTML = `<strong>${option.label}</strong><small>${option.description}</small>`;
+function renderCurrentQuestion() {
+  const question = QUESTIONS[currentQuestionIndex];
+  questionsRoot.innerHTML = "";
 
-      button.addEventListener("click", () => {
-        answers[question.id] = option.value;
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "question-card";
 
-        const siblingButtons = optionsGrid.querySelectorAll(".option-btn");
-        siblingButtons.forEach((item) => item.classList.remove("selected"));
-        button.classList.add("selected");
+  const legend = document.createElement("legend");
+  legend.textContent = question.prompt;
+  fieldset.appendChild(legend);
 
-        hideError();
-        hideResult();
-        updateProgress();
-      });
+  const optionsGrid = document.createElement("div");
+  optionsGrid.className = "options";
 
-      optionsGrid.appendChild(button);
+  OPTIONS.forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "option-btn";
+    button.dataset.questionId = question.id;
+    button.dataset.value = String(option.value);
+    button.innerHTML = `<strong>${option.label}</strong><small>${option.description}</small>`;
+
+    if (answers[question.id] === option.value) {
+      button.classList.add("selected");
+    }
+
+    button.addEventListener("click", () => {
+      answers[question.id] = option.value;
+      hideError();
+      hideResult();
+      updateProgress();
+      renderCurrentQuestion();
     });
 
-    fieldset.appendChild(optionsGrid);
-    fragment.appendChild(fieldset);
+    optionsGrid.appendChild(button);
   });
 
-  questionsRoot.appendChild(fragment);
+  fieldset.appendChild(optionsGrid);
+  questionsRoot.appendChild(fieldset);
+  updateQuestionNavigation();
 }
 
 form.addEventListener("submit", (event) => {
@@ -172,6 +194,11 @@ form.addEventListener("submit", (event) => {
 
   const answered = getAnsweredCount();
   if (answered !== QUESTIONS.length) {
+    const firstMissingIndex = QUESTIONS.findIndex((question) => answers[question.id] === undefined);
+    if (firstMissingIndex !== -1) {
+      currentQuestionIndex = firstMissingIndex;
+      renderCurrentQuestion();
+    }
     showError("Please answer all questions before getting your result.");
     hideResult();
     return;
@@ -189,6 +216,31 @@ form.addEventListener("submit", (event) => {
   showResult(calculateResult());
 });
 
+prevQuestionButton.addEventListener("click", () => {
+  if (currentQuestionIndex === 0) {
+    return;
+  }
+
+  hideError();
+  currentQuestionIndex -= 1;
+  renderCurrentQuestion();
+});
+
+nextQuestionButton.addEventListener("click", () => {
+  if (currentQuestionIndex >= QUESTIONS.length - 1) {
+    return;
+  }
+
+  if (!currentQuestionIsAnswered()) {
+    showError("Please choose an answer before going to the next question.");
+    return;
+  }
+
+  hideError();
+  currentQuestionIndex += 1;
+  renderCurrentQuestion();
+});
+
 emailInput.addEventListener("input", () => {
   emailInput.classList.remove("invalid");
   hideError();
@@ -197,18 +249,17 @@ emailInput.addEventListener("input", () => {
 
 resetButton.addEventListener("click", () => {
   Object.keys(answers).forEach((key) => delete answers[key]);
+  currentQuestionIndex = 0;
   emailInput.value = "";
   emailInput.classList.remove("invalid");
-
-  const buttons = document.querySelectorAll(".option-btn.selected");
-  buttons.forEach((button) => button.classList.remove("selected"));
 
   hideError();
   hideResult();
   updateProgress();
+  renderCurrentQuestion();
 });
 
-renderQuestions();
+renderCurrentQuestion();
 updateProgress();
 hideResult();
 hideError();
