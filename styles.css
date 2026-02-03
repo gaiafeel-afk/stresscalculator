@@ -344,10 +344,39 @@ h2 {
   margin: 0 0 0.55rem;
 }
 
+.result-cta {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.58rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #9bc8bf;
+  background: #effaf7;
+  color: #155d4f;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.result-cta:hover {
+  background: #e5f6f1;
+}
+
 .disclaimer {
   margin: 0.95rem 0 0;
   font-size: 0.9rem;
   color: var(--muted);
+}
+
+.site-footer {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto 1.1rem;
+  text-align: center;
+  color: #526072;
+  font-size: 0.9rem;
+}
+
+.site-footer a {
+  color: #146f59;
+  font-weight: 700;
 }
 
 @media (max-width: 980px) {
