@@ -21,6 +21,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(circle at 5% 8%, var(--bg1), transparent 35%),
     radial-gradient(circle at 90% 10%, var(--bg2), transparent 40%),
@@ -70,14 +71,6 @@ h1 {
   color: var(--muted);
 }
 
-.progress-panel {
-  margin-top: 1rem;
-  border: 1px solid #dbe2ef;
-  border-radius: 12px;
-  background: #f8fbff;
-  padding: 0.75rem;
-}
-
 .progress-row {
   display: flex;
   justify-content: space-between;
@@ -102,6 +95,25 @@ h1 {
   height: 100%;
   background: linear-gradient(90deg, #1ca98a, #157f66);
   transition: width 0.18s ease;
+}
+
+.sticky-progress {
+  position: fixed;
+  left: 50%;
+  bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 1rem));
+  border: 1px solid #cad4e6;
+  border-radius: 14px;
+  background: rgba(251, 253, 255, 0.96);
+  box-shadow: 0 12px 24px rgba(24, 42, 71, 0.2);
+  backdrop-filter: blur(4px);
+  padding: 0.62rem 0.75rem;
+  z-index: 30;
+}
+
+.sticky-progress .progress-row span {
+  font-weight: 700;
 }
 
 .quiz-form {
@@ -335,5 +347,15 @@ h2 {
 
   .btn {
     width: 100%;
+  }
+
+  .sticky-progress {
+    width: calc(100% - 0.75rem);
+    border-radius: 12px;
+    padding: 0.58rem 0.64rem;
+  }
+
+  .sticky-progress .progress-row {
+    font-size: 0.9rem;
   }
 }
