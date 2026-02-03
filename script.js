@@ -18,11 +18,9 @@ const OPTIONS = [
 
 const form = document.getElementById("quizForm");
 const questionsRoot = document.getElementById("questionsRoot");
-const questionCounter = document.getElementById("questionCounter");
-const questionNav = document.getElementById("questionNav");
-const prevQuestionButton = document.getElementById("prevQuestion");
-const nextQuestionButton = document.getElementById("nextQuestion");
 const completionSection = document.getElementById("completionSection");
+const emailBox = completionSection.querySelector(".email-box");
+const submitResultButton = document.getElementById("submitResult");
 const progressText = document.getElementById("progressText");
 const progressFill = document.getElementById("progressFill");
 const emailInput = document.getElementById("emailInput");
@@ -37,8 +35,7 @@ const summaryText = document.getElementById("summaryText");
 const nextStepText = document.getElementById("nextStepText");
 
 const answers = {};
-let currentQuestionIndex = 0;
-let emailStepVisible = false;
+let completionHighlighted = false;
 
 function emailIsValid(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -133,87 +130,90 @@ function updateProgress() {
   progressFill.style.width = `${percent}%`;
 }
 
-function currentQuestionIsAnswered() {
-  const question = QUESTIONS[currentQuestionIndex];
-  return answers[question.id] !== undefined;
-}
+function updateCompletionState() {
+  const ready = allQuestionsAnswered();
 
-function setEmailStepVisible(visible) {
-  emailStepVisible = visible;
-  completionSection.hidden = !visible;
-  questionNav.hidden = visible;
-}
+  emailBox.classList.toggle("locked", !ready);
+  emailInput.disabled = !ready;
+  submitResultButton.disabled = !ready;
 
-function updateQuestionNavigation() {
-  questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${QUESTIONS.length}`;
-  prevQuestionButton.disabled = currentQuestionIndex === 0;
-
-  const onLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
-  if (onLastQuestion) {
-    nextQuestionButton.textContent = "Last question";
-    nextQuestionButton.disabled = !currentQuestionIsAnswered();
+  if (!ready) {
+    completionSection.classList.remove("highlight");
+    completionHighlighted = false;
+    emailInput.classList.remove("invalid");
     return;
   }
 
-  nextQuestionButton.textContent = "Next";
-  nextQuestionButton.disabled = !currentQuestionIsAnswered();
+  if (!completionHighlighted) {
+    completionHighlighted = true;
+    completionSection.classList.add("highlight");
+    completionSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    window.setTimeout(() => {
+      completionSection.classList.remove("highlight");
+    }, 1500);
+  }
 }
 
-function renderCurrentQuestion() {
-  const question = QUESTIONS[currentQuestionIndex];
-  questionsRoot.innerHTML = "";
+function renderQuestions() {
+  const fragment = document.createDocumentFragment();
 
-  const fieldset = document.createElement("fieldset");
-  fieldset.className = "question-card";
+  QUESTIONS.forEach((question, index) => {
+    const fieldset = document.createElement("fieldset");
+    fieldset.className = "question-card";
+    fieldset.dataset.questionId = question.id;
 
-  const legend = document.createElement("legend");
-  legend.textContent = question.prompt;
-  fieldset.appendChild(legend);
+    const legend = document.createElement("legend");
+    legend.textContent = `${index + 1}. ${question.prompt}`;
+    fieldset.appendChild(legend);
 
-  const optionsGrid = document.createElement("div");
-  optionsGrid.className = "options";
+    const optionsGrid = document.createElement("div");
+    optionsGrid.className = "options";
 
-  OPTIONS.forEach((option) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "option-btn";
-    button.dataset.questionId = question.id;
-    button.dataset.value = String(option.value);
-    button.innerHTML = `<strong>${option.label}</strong><small>${option.description}</small>`;
+    OPTIONS.forEach((option) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "option-btn";
+      button.dataset.questionId = question.id;
+      button.dataset.value = String(option.value);
+      button.innerHTML = `<strong>${option.label}</strong><small>${option.description}</small>`;
 
-    if (answers[question.id] === option.value) {
-      button.classList.add("selected");
-    }
+      button.addEventListener("click", () => {
+        answers[question.id] = option.value;
 
-    button.addEventListener("click", () => {
-      answers[question.id] = option.value;
-      hideError();
-      hideResult();
-      updateProgress();
-      renderCurrentQuestion();
+        const siblingButtons = optionsGrid.querySelectorAll(".option-btn");
+        siblingButtons.forEach((item) => item.classList.remove("selected"));
+        button.classList.add("selected");
+
+        hideError();
+        hideResult();
+        updateProgress();
+        updateCompletionState();
+      });
+
+      optionsGrid.appendChild(button);
     });
 
-    optionsGrid.appendChild(button);
+    fieldset.appendChild(optionsGrid);
+    fragment.appendChild(fieldset);
   });
 
-  fieldset.appendChild(optionsGrid);
-  questionsRoot.appendChild(fieldset);
-  updateQuestionNavigation();
+  questionsRoot.appendChild(fragment);
 }
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   hideError();
 
-  const answered = getAnsweredCount();
-  if (answered !== QUESTIONS.length) {
-    const firstMissingIndex = QUESTIONS.findIndex((question) => answers[question.id] === undefined);
-    if (firstMissingIndex !== -1) {
-      currentQuestionIndex = firstMissingIndex;
-      renderCurrentQuestion();
-    }
+  if (!allQuestionsAnswered()) {
     showError("Please answer all questions before getting your result.");
     hideResult();
+
+    const firstMissing = QUESTIONS.find((question) => answers[question.id] === undefined);
+    if (firstMissing) {
+      const firstMissingNode = questionsRoot.querySelector(`[data-question-id="${firstMissing.id}"]`);
+      firstMissingNode?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     return;
   }
 
@@ -222,45 +222,12 @@ form.addEventListener("submit", (event) => {
     emailInput.classList.add("invalid");
     showError("Please enter a valid email address.");
     hideResult();
+    emailInput.focus();
     return;
   }
 
   emailInput.classList.remove("invalid");
   showResult(calculateResult());
-});
-
-prevQuestionButton.addEventListener("click", () => {
-  if (currentQuestionIndex === 0) {
-    return;
-  }
-
-  hideError();
-  currentQuestionIndex -= 1;
-  renderCurrentQuestion();
-});
-
-nextQuestionButton.addEventListener("click", () => {
-  if (!currentQuestionIsAnswered()) {
-    showError("Please choose an answer before going to the next question.");
-    return;
-  }
-
-  hideError();
-
-  if (currentQuestionIndex === QUESTIONS.length - 1) {
-    if (!allQuestionsAnswered()) {
-      showError("Please answer all questions before continuing.");
-      return;
-    }
-
-    setEmailStepVisible(true);
-    completionSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    emailInput.focus();
-    return;
-  }
-
-  currentQuestionIndex += 1;
-  renderCurrentQuestion();
 });
 
 emailInput.addEventListener("input", () => {
@@ -271,19 +238,23 @@ emailInput.addEventListener("input", () => {
 
 resetButton.addEventListener("click", () => {
   Object.keys(answers).forEach((key) => delete answers[key]);
-  currentQuestionIndex = 0;
   emailInput.value = "";
   emailInput.classList.remove("invalid");
 
+  const selectedButtons = questionsRoot.querySelectorAll(".option-btn.selected");
+  selectedButtons.forEach((button) => button.classList.remove("selected"));
+
   hideError();
   hideResult();
-  setEmailStepVisible(false);
   updateProgress();
-  renderCurrentQuestion();
+  updateCompletionState();
+
+  const firstQuestion = questionsRoot.querySelector(".question-card");
+  firstQuestion?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
-setEmailStepVisible(false);
-renderCurrentQuestion();
+renderQuestions();
 updateProgress();
+updateCompletionState();
 hideResult();
 hideError();

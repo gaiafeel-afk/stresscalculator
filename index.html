@@ -33,17 +33,9 @@
         </p>
 
         <form id="quizForm" class="quiz-form" novalidate>
-          <div class="question-shell">
-            <p id="questionCounter" class="question-counter">Question 1 of 8</p>
-            <div id="questionsRoot" class="questions"></div>
+          <div id="questionsRoot" class="questions"></div>
 
-            <div id="questionNav" class="question-nav">
-              <button type="button" id="prevQuestion" class="btn btn-secondary">Previous</button>
-              <button type="button" id="nextQuestion" class="btn btn-secondary">Next</button>
-            </div>
-          </div>
-
-          <section id="completionSection" class="completion-section" hidden>
+          <section id="completionSection" class="completion-section">
             <section class="email-box">
               <label for="emailInput">Email address (required to get results)</label>
               <input
@@ -58,7 +50,9 @@
             </section>
 
             <div class="actions">
-              <button type="submit" class="btn btn-primary">Get my stress result</button>
+              <button id="submitResult" type="submit" class="btn btn-primary">
+                Get my stress result
+              </button>
             </div>
           </section>
 
