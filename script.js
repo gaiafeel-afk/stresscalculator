@@ -19,6 +19,7 @@ const OPTIONS = [
 const form = document.getElementById("quizForm");
 const questionsRoot = document.getElementById("questionsRoot");
 const questionCounter = document.getElementById("questionCounter");
+const questionNav = document.getElementById("questionNav");
 const prevQuestionButton = document.getElementById("prevQuestion");
 const nextQuestionButton = document.getElementById("nextQuestion");
 const completionSection = document.getElementById("completionSection");
@@ -37,6 +38,7 @@ const nextStepText = document.getElementById("nextStepText");
 
 const answers = {};
 let currentQuestionIndex = 0;
+let emailStepVisible = false;
 
 function emailIsValid(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -129,13 +131,17 @@ function updateProgress() {
   const percent = Math.round((answered / QUESTIONS.length) * 100);
   progressText.textContent = `${answered}/${QUESTIONS.length} answered`;
   progressFill.style.width = `${percent}%`;
-
-  completionSection.hidden = !allQuestionsAnswered();
 }
 
 function currentQuestionIsAnswered() {
   const question = QUESTIONS[currentQuestionIndex];
   return answers[question.id] !== undefined;
+}
+
+function setEmailStepVisible(visible) {
+  emailStepVisible = visible;
+  completionSection.hidden = !visible;
+  questionNav.hidden = visible;
 }
 
 function updateQuestionNavigation() {
@@ -145,7 +151,7 @@ function updateQuestionNavigation() {
   const onLastQuestion = currentQuestionIndex === QUESTIONS.length - 1;
   if (onLastQuestion) {
     nextQuestionButton.textContent = "Last question";
-    nextQuestionButton.disabled = true;
+    nextQuestionButton.disabled = !currentQuestionIsAnswered();
     return;
   }
 
@@ -180,16 +186,11 @@ function renderCurrentQuestion() {
     }
 
     button.addEventListener("click", () => {
-      const wasComplete = allQuestionsAnswered();
       answers[question.id] = option.value;
       hideError();
       hideResult();
       updateProgress();
       renderCurrentQuestion();
-
-      if (!wasComplete && allQuestionsAnswered()) {
-        completionSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
     });
 
     optionsGrid.appendChild(button);
@@ -239,16 +240,25 @@ prevQuestionButton.addEventListener("click", () => {
 });
 
 nextQuestionButton.addEventListener("click", () => {
-  if (currentQuestionIndex >= QUESTIONS.length - 1) {
-    return;
-  }
-
   if (!currentQuestionIsAnswered()) {
     showError("Please choose an answer before going to the next question.");
     return;
   }
 
   hideError();
+
+  if (currentQuestionIndex === QUESTIONS.length - 1) {
+    if (!allQuestionsAnswered()) {
+      showError("Please answer all questions before continuing.");
+      return;
+    }
+
+    setEmailStepVisible(true);
+    completionSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    emailInput.focus();
+    return;
+  }
+
   currentQuestionIndex += 1;
   renderCurrentQuestion();
 });
@@ -267,10 +277,12 @@ resetButton.addEventListener("click", () => {
 
   hideError();
   hideResult();
+  setEmailStepVisible(false);
   updateProgress();
   renderCurrentQuestion();
 });
 
+setEmailStepVisible(false);
 renderCurrentQuestion();
 updateProgress();
 hideResult();
