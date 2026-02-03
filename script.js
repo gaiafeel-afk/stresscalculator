@@ -21,6 +21,7 @@ const questionsRoot = document.getElementById("questionsRoot");
 const questionCounter = document.getElementById("questionCounter");
 const prevQuestionButton = document.getElementById("prevQuestion");
 const nextQuestionButton = document.getElementById("nextQuestion");
+const completionSection = document.getElementById("completionSection");
 const progressText = document.getElementById("progressText");
 const progressFill = document.getElementById("progressFill");
 const emailInput = document.getElementById("emailInput");
@@ -43,6 +44,10 @@ function emailIsValid(value) {
 
 function getAnsweredCount() {
   return QUESTIONS.reduce((count, question) => (answers[question.id] === undefined ? count : count + 1), 0);
+}
+
+function allQuestionsAnswered() {
+  return getAnsweredCount() === QUESTIONS.length;
 }
 
 function levelClass(level) {
@@ -124,6 +129,8 @@ function updateProgress() {
   const percent = Math.round((answered / QUESTIONS.length) * 100);
   progressText.textContent = `${answered}/${QUESTIONS.length} answered`;
   progressFill.style.width = `${percent}%`;
+
+  completionSection.hidden = !allQuestionsAnswered();
 }
 
 function currentQuestionIsAnswered() {
@@ -173,11 +180,16 @@ function renderCurrentQuestion() {
     }
 
     button.addEventListener("click", () => {
+      const wasComplete = allQuestionsAnswered();
       answers[question.id] = option.value;
       hideError();
       hideResult();
       updateProgress();
       renderCurrentQuestion();
+
+      if (!wasComplete && allQuestionsAnswered()) {
+        completionSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
 
     optionsGrid.appendChild(button);

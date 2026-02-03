@@ -198,9 +198,17 @@ h1 {
 
 .question-nav {
   margin-top: 0.75rem;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
+}
+
+.question-nav .btn {
+  width: 100%;
+}
+
+.completion-section {
+  margin-top: 0.9rem;
 }
 
 .email-box {
@@ -258,6 +266,10 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.56rem;
+}
+
+.footer-actions {
+  margin-top: 0.65rem;
 }
 
 .btn {
@@ -375,10 +387,6 @@ h2 {
 
   .btn {
     width: 100%;
-  }
-
-  .question-nav {
-    flex-direction: column;
   }
 
   .progress-panel {
