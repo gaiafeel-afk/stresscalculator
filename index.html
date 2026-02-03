@@ -20,6 +20,16 @@
           to unlock your stress score.
         </p>
 
+        <div class="progress-panel" role="status" aria-live="polite">
+          <div class="progress-row">
+            <span>Quick progress</span>
+            <strong id="progressText">0/8 answered</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+        </div>
+
         <form id="quizForm" class="quiz-form" novalidate>
           <div id="questionsRoot" class="questions"></div>
 
@@ -67,16 +77,6 @@
         </p>
       </aside>
     </main>
-
-    <div class="sticky-progress" role="status" aria-live="polite">
-      <div class="progress-row">
-        <span>Quick progress</span>
-        <strong id="progressText">0/8 answered</strong>
-      </div>
-      <div class="progress-track" aria-hidden="true">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-    </div>
 
     <script src="script.js" defer></script>
   </body>

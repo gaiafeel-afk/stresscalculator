@@ -21,7 +21,6 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(circle at 5% 8%, var(--bg1), transparent 35%),
     radial-gradient(circle at 90% 10%, var(--bg2), transparent 40%),
@@ -97,22 +96,21 @@ h1 {
   transition: width 0.18s ease;
 }
 
-.sticky-progress {
-  position: fixed;
-  left: 50%;
-  bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  width: min(760px, calc(100% - 1rem));
-  border: 1px solid #cad4e6;
+.progress-panel {
+  margin-top: 1rem;
+  margin-bottom: 0.85rem;
+  position: sticky;
+  top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  z-index: 20;
+  border: 1px solid #cad7eb;
   border-radius: 14px;
-  background: rgba(251, 253, 255, 0.96);
-  box-shadow: 0 12px 24px rgba(24, 42, 71, 0.2);
+  background: rgba(248, 251, 255, 0.96);
+  box-shadow: 0 10px 20px rgba(24, 42, 71, 0.16);
   backdrop-filter: blur(4px);
   padding: 0.62rem 0.75rem;
-  z-index: 30;
 }
 
-.sticky-progress .progress-row span {
+.progress-panel .progress-row span {
   font-weight: 700;
 }
 
@@ -349,13 +347,12 @@ h2 {
     width: 100%;
   }
 
-  .sticky-progress {
-    width: calc(100% - 0.75rem);
+  .progress-panel {
     border-radius: 12px;
     padding: 0.58rem 0.64rem;
   }
 
-  .sticky-progress .progress-row {
+  .progress-panel .progress-row {
     font-size: 0.9rem;
   }
 }
