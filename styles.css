@@ -21,6 +21,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  padding-top: calc(86px + env(safe-area-inset-top, 0px));
   background:
     radial-gradient(circle at 5% 8%, var(--bg1), transparent 35%),
     radial-gradient(circle at 90% 10%, var(--bg2), transparent 40%),
@@ -29,7 +30,7 @@ body {
 
 .app-shell {
   width: min(1120px, 100% - 2rem);
-  margin: 1.2rem auto 2rem;
+  margin: 0 auto 2rem;
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
@@ -96,15 +97,21 @@ h1 {
   transition: width 0.18s ease;
 }
 
+.progress-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  padding: calc(0.45rem + env(safe-area-inset-top, 0px)) 0.5rem 0.5rem;
+}
+
 .progress-panel {
-  margin-top: 1rem;
-  margin-bottom: 0.85rem;
-  position: sticky;
-  top: calc(0.5rem + env(safe-area-inset-top, 0px));
-  z-index: 20;
+  margin: 0 auto;
+  width: min(1120px, calc(100% - 0.5rem));
   border: 1px solid #cad7eb;
   border-radius: 14px;
-  background: rgba(248, 251, 255, 0.96);
+  background: rgba(248, 251, 255, 0.97);
   box-shadow: 0 10px 20px rgba(24, 42, 71, 0.16);
   backdrop-filter: blur(4px);
   padding: 0.62rem 0.75rem;
@@ -257,7 +264,7 @@ h1 {
 
 .result-panel {
   position: sticky;
-  top: 1rem;
+  top: calc(92px + env(safe-area-inset-top, 0px));
   padding: 1.1rem;
 }
 
@@ -324,6 +331,10 @@ h2 {
 }
 
 @media (max-width: 620px) {
+  body {
+    padding-top: calc(82px + env(safe-area-inset-top, 0px));
+  }
+
   .app-shell {
     width: calc(100% - 1rem);
     margin-inline: auto;
@@ -348,6 +359,7 @@ h2 {
   }
 
   .progress-panel {
+    width: calc(100% - 0.25rem);
     border-radius: 12px;
     padding: 0.58rem 0.64rem;
   }
